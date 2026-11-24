@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>VulnX | Scan History</title>
+
+    <style>
+
+        :root {
+            --p:#0284c7; --p2:#0369a1; --soft:#e0f2fe; --tint:#f0f9ff;
+            --accent:#38bdf8; --ink:#0c2a3f; --text:#1f2937; --muted:#64748b;
+            --line:#dde7ee; --bg:#f2f8fc; --white:#ffffff;
+        }
+
+        * { box-sizing:border-box; }
+
+        body {
+            margin:0;
+            font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+            background:var(--bg);
+            color:var(--text);
+        }
+
+        /* --- Top nav --- */
+        .nav {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:14px 40px; background:var(--white);
+            border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20;
+        }
+        .logo { display:flex; align-items:center; gap:11px; font-weight:800; font-size:21px; color:var(--ink); text-decoration:none; }
+        .logo .mark {
+            width:34px; height:34px; border-radius:9px;
+            background:linear-gradient(135deg,var(--p),var(--accent));
+            display:flex; align-items:center; justify-content:center;
+            color:#fff; font-weight:800;
+        }
+        .logo .x { color:var(--p); }
+        .nav-actions { display:flex; gap:10px; }
+        .btn-ghost {
+            color:var(--p2); font-weight:700; padding:10px 16px; border-radius:10px;
+            border:1px solid var(--soft); background:var(--tint); text-decoration:none; font-size:14px;
+        }
+        .btn-ghost:hover { background:var(--soft); }
+        .btn-solid {
+            color:#fff; font-weight:700; padding:11px 20px; border-radius:10px;
+            background:linear-gradient(135deg,var(--p),var(--p2));
+            box-shadow:0 8px 18px rgba(2,132,199,.28); text-decoration:none; font-size:14px;
+        }
+
+        .container { width:94%; max-width:1200px; margin:34px auto; }
+
+        .header {
+            background:var(--white); border:1px solid var(--line);
+            border-radius:16px; padding:26px 28px; margin-bottom:20px;
+            box-shadow:0 6px 22px rgba(8,47,73,.06);
+        }
+        .header h1 { margin:0 0 6px; color:var(--ink); font-size:26px; }
+        .muted { color:var(--muted); font-size:14px; }
+
+        .card {
+            background:var(--white); border:1px solid var(--line);
+            border-radius:16px; padding:24px; margin-bottom:20px;
+            box-shadow:0 6px 22px rgba(8,47,73,.06);
+        }
+
+        .table-wrapper { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; }
+        th, td { padding:14px; text-align:left; border-bottom:1px solid var(--line); font-size:14px; }
+        th { color:var(--p2); background:var(--tint); font-size:13px; text-transform:uppercase; letter-spacing:.4px; }
+        tr:hover td { background:var(--tint); }
+
+        .scan-link { color:var(--p2); text-decoration:none; font-weight:800; }
+        .scan-link:hover { text-decoration:underline; }
+
+        .badge {
+            display:inline-block; padding:4px 10px; border-radius:999px;
+            background:var(--soft); color:var(--p2); font-size:12px; font-weight:700;
+        }
+
+        /* --- Action buttons --- */
+        .action {
+            display:inline-block; padding:8px 13px; border-radius:8px; border:none;
+            text-decoration:none; cursor:pointer; font-size:13px; font-weight:700; margin:2px 3px 2px 0;
+        }
+        .view { background:linear-gradient(135deg,var(--p),var(--p2)); color:#fff; }
+        .view:hover { filter:brightness(1.05); }
+        .delete { background:#fee2e2; color:#b91c1c; }
+        .delete:hover { background:#fecaca; }
+
+        /* --- Export dropdown --- */
+        .export-wrap { position:relative; display:inline-block; }
+        .export-btn { background:var(--tint); color:var(--p2); border:1px solid var(--soft); }
+        .export-btn:hover { background:var(--soft); }
+        .export-menu {
+            display:none; position:absolute; right:0; top:110%; z-index:10;
+            background:var(--white); border:1px solid var(--line); border-radius:10px;
+            box-shadow:0 10px 26px rgba(8,47,73,.16); min-width:150px; overflow:hidden;
+        }
+        .export-wrap.open .export-menu { display:block; }
+        .export-menu a {
+            display:block; padding:10px 14px; color:var(--text);
+            text-decoration:none; font-size:13px; font-weight:600;
+        }
+        .export-menu a:hover { background:var(--tint); color:var(--p2); }
+
+        .button {
+            display:inline-block; margin-top:20px; margin-right:10px;
+            padding:12px 20px; border-radius:11px; text-decoration:none; font-weight:700; font-size:14px;
+        }
+        .button.primary { background:linear-gradient(135deg,var(--p),var(--p2)); color:#fff; box-shadow:0 8px 18px rgba(2,132,199,.28); }
+        .button.secondary { background:var(--tint); color:var(--p2); border:1px solid var(--soft); }
+
+        .empty { padding:36px; text-align:center; color:var(--muted); }
+
+        .message { padding:14px 16px; border-radius:12px; margin-bottom:18px; font-size:14px; font-weight:600; }
+        .success-message { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+        .error-message { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <!-- Top navigation -->
+    <div class="nav">
+        <a class="logo" href="/">
+            <span class="mark">V</span>
+            <span>Vuln<span class="x">X</span></span>
+        </a>
+        <div class="nav-actions">
+            <a class="btn-ghost" href="/compare">Compare Scans</a>
+            <a class="btn-solid" href="/">New Scan</a>
+        </div>
+    </div>
+
+
+    <div class="container">
+
+
+        <div class="header">
+            <h1>Scan History</h1>
+            <div class="muted">
+                Previously completed security assessments. Open any scan for full
+                findings, or export it as a report or data file.
+            </div>
+        </div>
+
+
+        {% if message %}
+            <div class="message success-message">{{ message }}</div>
+        {% endif %}
+
+        {% if error %}
+            <div class="message error-message">{{ error }}</div>
+        {% endif %}
+
+
+        <div class="card">
+
+
+            {% if scans %}
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Target</th>
+                                <th>Date / Time</th>
+                                <th>Hosts</th>
+                                <th>Open Ports</th>
+                                <th>Findings</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for scan in scans %}
+
+                            <tr>
+
+                                <td>
+                                    <a href="/scan/{{ scan.id }}" class="scan-link">
+                                        #{{ scan.id }}
+                                    </a>
+                                </td>
+
+                                <td>{{ scan.target }}</td>
+
+                                <td>{{ scan.started_at }}</td>
+
+                                <td><span class="badge">{{ scan.hosts_scanned }}</span></td>
+
+                                <td><span class="badge">{{ scan.open_ports }}</span></td>
+
+                                <td><span class="badge">{{ scan.findings }}</span></td>
+
+                                <td>
+
+                                    <a href="/scan/{{ scan.id }}" class="action view">
+                                        View
+                                    </a>
+
+                                    <!-- Export dropdown -->
+                                    <span class="export-wrap">
+                                        <button
+                                            type="button"
+                                            class="action export-btn"
+                                            onclick="toggleExport(this)"
+                                        >
+                                            Export &#9662;
+                                        </button>
+                                        <span class="export-menu">
+                                            <a href="/report/{{ scan.id }}">PDF report</a>
+                                            <a href="/export/{{ scan.id }}/csv">CSV (spreadsheet)</a>
+                                            <a href="/export/{{ scan.id }}/json">JSON</a>
+                                            <a href="/export/{{ scan.id }}/xml">XML</a>
+                                        </span>
+                                    </span>
+
+                                    <form
+                                        method="POST"
+                                        action="/scan/{{ scan.id }}/delete"
+                                        style="display:inline;"
+                                        onsubmit="return confirm(
+                                            'Delete Scan #{{ scan.id }}? This permanently removes its stored ports and findings.'
+                                        );"
+                                    >
+                                        <button type="submit" class="action delete">
+                                            Delete
+                                        </button>
+                                    </form>
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="empty">
+                    No scans have been recorded yet.
+                </div>
+
+            {% endif %}
+
+
+            <a href="/" class="button primary">Start New Scan</a>
+            <a href="/compare" class="button secondary">Compare Scans</a>
+
+
+        </div>
+
+
+    </div>
+
+
+    <script>
+        function toggleExport(btn) {
+            var wrap = btn.closest(".export-wrap");
+            var wasOpen = wrap.classList.contains("open");
+            // Close all open dropdowns first.
+            document.querySelectorAll(".export-wrap.open").forEach(function (w) {
+                w.classList.remove("open");
+            });
+            if (!wasOpen) {
+                wrap.classList.add("open");
+            }
+        }
+
+        // Click anywhere else closes the menu.
+        document.addEventListener("click", function (event) {
+            if (!event.target.closest(".export-wrap")) {
+                document.querySelectorAll(".export-wrap.open").forEach(function (w) {
+                    w.classList.remove("open");
+                });
+            }
+        });
+    </script>
+
+</body>
+
+</html>

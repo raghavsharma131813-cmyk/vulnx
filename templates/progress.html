@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VulnX | Scanning...</title>
+
+    <style>
+
+        :root {
+            --p:#0284c7; --p2:#0369a1; --soft:#e0f2fe; --tint:#f0f9ff;
+            --accent:#38bdf8; --ink:#0c2a3f; --text:#1f2937; --muted:#64748b;
+            --line:#dde7ee; --bg:#f2f8fc; --white:#ffffff;
+        }
+
+        * { box-sizing:border-box; }
+
+        body {
+            margin:0; min-height:100vh;
+            font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+            background:
+                radial-gradient(900px 420px at 50% -10%, var(--soft), transparent),
+                var(--bg);
+            color:var(--text);
+            display:flex; align-items:center; justify-content:center; padding:24px;
+        }
+
+        .panel {
+            width:100%; max-width:620px; background:var(--white);
+            border:1px solid var(--line); border-radius:20px; padding:38px 40px;
+            box-shadow:0 18px 50px rgba(8,47,73,.12);
+        }
+
+        .brand { display:flex; align-items:center; gap:12px; margin-bottom:26px; }
+        .brand .mark {
+            width:42px; height:42px; border-radius:11px;
+            background:linear-gradient(135deg,var(--p),var(--accent));
+            display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:20px;
+        }
+        .brand .name { font-weight:800; font-size:22px; color:var(--ink); }
+        .brand .name .x { color:var(--p); }
+
+        h1 { margin:0 0 6px; font-size:22px; color:var(--ink); }
+        .target { color:var(--muted); font-size:14px; margin-bottom:28px; }
+        .target strong { color:var(--p2); }
+
+        /* Progress bar */
+        .bar-head { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:10px; }
+        .phase { font-size:14px; font-weight:600; color:var(--ink); max-width:75%; }
+        .pct { font-size:26px; font-weight:800; color:var(--p2); }
+
+        .track {
+            width:100%; height:16px; border-radius:999px; background:var(--soft);
+            overflow:hidden; position:relative;
+        }
+        .fill {
+            height:100%; width:0%; border-radius:999px;
+            background:linear-gradient(90deg,var(--p),var(--accent));
+            transition:width .25s ease;
+            position:relative; overflow:hidden;
+        }
+        /* Moving stripe so the bar looks alive during long phases */
+        .fill::after {
+            content:""; position:absolute; inset:0;
+            background:linear-gradient(
+                110deg,
+                rgba(255,255,255,0) 0%,
+                rgba(255,255,255,.45) 50%,
+                rgba(255,255,255,0) 100%
+            );
+            background-size:200% 100%;
+            animation:shimmer 1.3s linear infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position:200% 0; }
+            100% { background-position:-200% 0; }
+        }
+
+        .meta { display:flex; justify-content:space-between; margin-top:18px; gap:16px; }
+        .meta .box {
+            flex:1; background:var(--tint); border:1px solid var(--soft);
+            border-radius:12px; padding:14px 16px;
+        }
+        .meta .box .k { font-size:12px; color:var(--muted); margin-bottom:4px; }
+        .meta .box .v { font-size:18px; font-weight:800; color:var(--ink); }
+
+        .note { margin-top:24px; font-size:13px; color:var(--muted); line-height:1.6; }
+
+        /* Error state */
+        .error {
+            margin-top:24px; padding:16px; border-radius:12px;
+            background:#fef2f2; border:1px solid #fecaca; color:#b91c1c;
+            font-size:14px; line-height:1.5; display:none;
+        }
+        .error.show { display:block; }
+        .error a {
+            display:inline-block; margin-top:12px; padding:10px 18px; border-radius:10px;
+            background:linear-gradient(135deg,var(--p),var(--p2)); color:#fff;
+            text-decoration:none; font-weight:700; font-size:13px;
+        }
+
+        .dots::after {
+            content:""; animation:dots 1.4s steps(4,end) infinite;
+        }
+        @keyframes dots {
+            0% { content:""; } 25% { content:"."; }
+            50% { content:".."; } 75% { content:"..."; }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="panel">
+
+        <div class="brand">
+            <span class="mark">V</span>
+            <span class="name">Vuln<span class="x">X</span></span>
+        </div>
+
+        <h1>Scanning in progress<span class="dots" id="dots"></span></h1>
+        <div class="target">Target: <strong>{{ target }}</strong></div>
+
+        <div class="bar-head">
+            <div class="phase" id="phase">Starting scan...</div>
+            <div class="pct" id="pct">0%</div>
+        </div>
+
+        <div class="track">
+            <div class="fill" id="fill"></div>
+        </div>
+
+        <div class="meta">
+            <div class="box">
+                <div class="k">Elapsed</div>
+                <div class="v" id="elapsed">0s</div>
+            </div>
+            <div class="box">
+                <div class="k">Estimated remaining</div>
+                <div class="v" id="remaining">estimating...</div>
+            </div>
+        </div>
+
+        <div class="note">
+            The scan runs on the server. You can keep this tab open. nmap on the
+            open internet is the slowest step, so the bar may sit in that phase
+            for a while before moving on. Remaining time is an estimate and
+            adjusts as the scan proceeds.
+        </div>
+
+        <div class="error" id="error"></div>
+
+    </div>
+
+
+    <script>
+        var JOB_ID = "{{ job_id }}";
+
+        var displayPercent = 0;   // smoothed bar value
+        var targetPercent = 3;    // hard milestone from server
+        var softCap = 5;          // ceiling the bar may creep toward
+        var serverElapsed = 0;    // real elapsed seconds from server
+        var finished = false;
+
+        var fill = document.getElementById("fill");
+        var pct = document.getElementById("pct");
+        var phaseEl = document.getElementById("phase");
+        var elapsedEl = document.getElementById("elapsed");
+        var remainingEl = document.getElementById("remaining");
+        var errorEl = document.getElementById("error");
+        var dotsEl = document.getElementById("dots");
+
+        function fmtTime(sec) {
+            sec = Math.max(0, Math.round(sec));
+            if (sec < 60) { return sec + "s"; }
+            var m = Math.floor(sec / 60);
+            var s = sec % 60;
+            return m + "m " + s + "s";
+        }
+
+        // Poll the server for the real phase/milestone.
+        function poll() {
+            fetch("/scan/status/" + JOB_ID)
+                .then(function (r) {
+                    if (r.status === 404) { throw new Error("missing"); }
+                    return r.json();
+                })
+                .then(function (data) {
+                    if (data.missing) { window.location = "/"; return; }
+
+                    serverElapsed = data.elapsed || 0;
+
+                    if (data.error) {
+                        finished = true;
+                        showError(data.error);
+                        return;
+                    }
+
+                    if (data.done && data.scan_id) {
+                        finished = true;
+                        targetPercent = 100;
+                        softCap = 100;
+                        phaseEl.textContent = "Scan complete. Loading results...";
+                        setTimeout(function () {
+                            window.location = "/scan/result/" + JOB_ID;
+                        }, 600);
+                        return;
+                    }
+
+                    targetPercent = data.percent || targetPercent;
+                    softCap = data.soft_cap || targetPercent;
+                    if (data.label) { phaseEl.textContent = data.label; }
+
+                    setTimeout(poll, 1200);
+                })
+                .catch(function () {
+                    // Transient network/server hiccup: keep trying unless finished.
+                    if (!finished) { setTimeout(poll, 1500); }
+                });
+        }
+
+        function showError(message) {
+            dotsEl.style.display = "none";
+            phaseEl.textContent = "Scan failed.";
+            errorEl.innerHTML =
+                "The scan could not complete: " + message +
+                '<br><a href="/">Back to New Scan</a>';
+            errorEl.classList.add("show");
+            remainingEl.textContent = "-";
+        }
+
+        // Smooth animation loop: eases the bar and keeps it moving during
+        // long phases by creeping toward the soft cap.
+        function animate() {
+            if (!finished) {
+                if (displayPercent < targetPercent) {
+                    // Catch up quickly to the real milestone.
+                    displayPercent += (targetPercent - displayPercent) * 0.25;
+                } else if (displayPercent < softCap) {
+                    // Creep slowly toward the soft cap (eases as it nears).
+                    displayPercent += (softCap - displayPercent) * 0.012;
+                }
+            } else if (!errorEl.classList.contains("show")) {
+                // Finished successfully: glide to 100.
+                displayPercent += (100 - displayPercent) * 0.3;
+            }
+
+            var shown = Math.min(100, displayPercent);
+            fill.style.width = shown + "%";
+            pct.textContent = Math.round(shown) + "%";
+
+            // Elapsed uses the real server value; tick up smoothly between polls.
+            elapsedEl.textContent = fmtTime(serverElapsed);
+
+            // Remaining estimate derived from progress so far.
+            if (!finished && shown > 4) {
+                var total = serverElapsed / (shown / 100);
+                var remaining = total - serverElapsed;
+                remainingEl.textContent = "~" + fmtTime(remaining);
+            } else if (finished && !errorEl.classList.contains("show")) {
+                remainingEl.textContent = "done";
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Tick the elapsed clock locally between server polls.
+        setInterval(function () {
+            if (!finished) { serverElapsed += 0.5; }
+        }, 500);
+
+        poll();
+        requestAnimationFrame(animate);
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,23 @@
+# Virtual environment (never commit this, recreate it locally)
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Databases (local scan data)
+*.db
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Pytest cache
+.pytest_cache/

@@ -1,0 +1,4 @@
+model_a,model_b,spearman,kendall_tau
+base_vulnx,cvss_only,0.722,0.692
+base_vulnx,context_aware,0.596,0.411
+context_aware,cvss_only,0.312,0.187

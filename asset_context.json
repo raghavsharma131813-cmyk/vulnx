@@ -1,0 +1,12 @@
+{
+    "127.0.0.1": {
+        "asset_criticality": "CRITICAL",
+        "network_exposure": "INTERNET",
+        "service_importance": "CRITICAL"
+    },
+    "10.0.0.10": {
+        "asset_criticality": "LOW",
+        "network_exposure": "LOCAL",
+        "service_importance": "LOW"
+    }
+}

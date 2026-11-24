@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>VulnX | Scan Results</title>
+
+    <style>
+
+    :root {
+        --green:#0284c7; --green-dark:#0369a1; --green-soft:#e0f2fe;
+        --green-tint:#f0f9ff; --ink:#0c2a3f; --text:#1f2937; --muted:#6b7280;
+        --line:#e3ebe6; --bg:#f2f8fc; --white:#ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin:0;
+        font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+        background: radial-gradient(1100px 500px at 100% -10%, var(--green-soft), transparent), var(--bg);
+        color:var(--text);
+    }
+    .navbar {
+        display:flex; align-items:center; justify-content:space-between;
+        padding:15px 28px; background:var(--white); border-bottom:1px solid var(--line);
+        position:sticky; top:0; z-index:10;
+    }
+    .navbar .brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px; color:var(--ink); }
+    .navbar .brand .dot {
+        width:30px; height:30px; border-radius:9px;
+        background:linear-gradient(135deg,var(--green),#38bdf8);
+        display:inline-flex; align-items:center; justify-content:center; color:#fff;
+    }
+    .navbar .nav-actions { display:flex; gap:10px; }
+    .navbar a {
+        text-decoration:none; font-weight:600; padding:9px 16px; border-radius:9px;
+        color:var(--green-dark); background:var(--green-tint); border:1px solid var(--green-soft);
+    }
+    .navbar a:hover { background:var(--green-soft); }
+    .container { width:92%; max-width:1200px; margin:28px auto; }
+    .header, .card {
+        background:var(--white); border:1px solid var(--line);
+        border-radius:16px; padding:26px; margin-bottom:20px;
+        box-shadow:0 6px 22px rgba(8,47,73,0.06);
+    }
+    h1 { margin:0 0 8px; color:var(--ink); }
+    h2 { margin-top:0; color:var(--ink); }
+    h3 { margin-bottom:8px; color:var(--ink); }
+    .target, .muted { color:var(--muted); }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px; }
+    .stat {
+        background:var(--green-tint); border:1px solid var(--green-soft);
+        padding:20px; border-radius:12px;
+    }
+    .stat-value { font-size:32px; font-weight:800; margin-top:8px; color:var(--ink); }
+
+    .context-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:18px; }
+    .context-item { background:var(--green-tint); padding:18px; border-radius:12px; border:1px solid var(--green-soft); }
+    .context-label { color:var(--muted); font-size:13px; margin-bottom:8px; }
+    .context-value { font-size:18px; font-weight:800; color:var(--green-dark); }
+    .context-multiplier {
+        margin-top:16px; padding:15px; border-radius:12px;
+        background:var(--green-tint); border:1px solid var(--green-soft); font-size:15px; color:var(--ink);
+    }
+    .context-note { margin-top:12px; color:var(--muted); font-size:13px; line-height:1.5; }
+    .finding-context {
+        margin-top:15px; padding:15px; border-radius:12px;
+        background:#fbfdfc; border:1px solid var(--line);
+    }
+    .finding-context-title { font-weight:800; margin-bottom:10px; color:var(--ink); }
+
+    /* charts */
+    .chart-dashboard { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:12px; }
+    .chart-card { background:#fbfdfc; border:1px solid var(--line); border-radius:14px; padding:18px; }
+    .chart-title { font-weight:700; color:var(--ink); margin-bottom:10px; text-align:center; }
+    .chart-wrap { position:relative; height:260px; }
+
+    .risk-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
+    .risk-box { padding:16px; border-radius:12px; border:1px solid transparent; }
+    .risk-box > div:first-child { font-weight:700; }
+    .risk-box .stat-value { color:inherit; }
+    .critical { background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
+    .high { background:#ffedd5; color:#c2410c; border-color:#fed7aa; }
+    .medium { background:#fef9c3; color:#92610a; border-color:#fde68a; }
+    .low { background:#d1fae5; color:#047857; border-color:#a7f3d0; }
+    .info { background:#eef2f7; color:#475569; border-color:#e2e8f0; }
+
+    .finding { background:#fbfdfc; padding:20px; margin-top:15px; border-radius:12px; border:1px solid var(--line); }
+    .finding-title { font-size:20px; font-weight:800; margin-bottom:10px; color:var(--ink); }
+    .badge {
+        display:inline-block; padding:5px 10px; border-radius:999px; margin:4px 5px 4px 0;
+        background:#eef2f7; color:#334155; font-size:13px; font-weight:600;
+    }
+    .badge-validation { background:#fef3c7; color:#92400e; }
+    .badge-potential { background:#ffedd5; color:#9a3412; }
+    .badge-observed { background:#eef2f7; color:#475569; }
+    .detail { margin-top:10px; line-height:1.5; }
+
+    .cvss-box { margin-top:14px; padding:15px; border-radius:12px; background:#fbfdfc; border:1px solid var(--line); }
+    .cvss-title { font-weight:800; margin-bottom:8px; color:var(--ink); }
+
+    .metasploit-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:18px; }
+    .metasploit-stat { background:var(--green-tint); padding:16px; border-radius:12px; border:1px solid var(--green-soft); }
+    .metasploit-stat-label { color:var(--muted); font-size:13px; margin-bottom:7px; }
+    .metasploit-stat-value { font-size:24px; font-weight:800; color:var(--ink); }
+
+    .module-group { margin-top:18px; }
+    .module-card { background:#fbfdfc; border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:12px; }
+    .module-name { font-size:16px; font-weight:800; overflow-wrap:anywhere; color:var(--ink); }
+    .module-meta { margin-top:8px; }
+    .module-description { margin-top:12px; color:#4b5563; line-height:1.5; }
+    .module-type-auxiliary { background:#dbeafe; color:#1e40af; }
+    .module-type-exploit { background:#fee2e2; color:#b91c1c; }
+    .module-empty { margin-top:12px; padding:14px; border-radius:10px; background:#fbfdfc; border:1px solid var(--line); color:var(--muted); }
+    .module-note { margin-top:15px; padding:14px; border-radius:10px; background:var(--green-tint); border:1px solid var(--green-soft); color:#075985; line-height:1.5; font-size:13px; }
+    .ms-toggle { display:flex; gap:8px; margin:20px 0 4px; flex-wrap:wrap; }
+    .ms-toggle-btn {
+        padding:9px 18px; border-radius:999px; border:1px solid var(--line);
+        background:var(--white); color:var(--muted); cursor:pointer;
+        font-weight:700; font-size:13px;
+    }
+    .ms-toggle-btn:hover { border-color:var(--green); color:var(--green-dark); }
+    .ms-toggle-btn.active {
+        background:linear-gradient(135deg,var(--green),#38bdf8);
+        color:#fff; border-color:transparent;
+    }
+    .ms-toggle-hint { color:var(--muted); font-size:13px; margin-bottom:4px; }
+
+    .module-button-group { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+    .ms-button {
+        display:inline-flex; align-items:center; width:fit-content; padding:10px 14px;
+        border-radius:9px; background:var(--white); border:1px solid var(--line);
+        color:var(--ink); cursor:pointer; font-weight:700; list-style:none;
+    }
+    .ms-button::-webkit-details-marker { display:none; }
+    .ms-button::before { content:"\25B6"; margin-right:8px; font-size:11px; }
+    details[open] > .ms-button::before { content:"\25BC"; }
+    .ms-button:hover { background:var(--green-tint); border-color:var(--green); }
+    .ms-button-aux { border-color:#93c5fd; }
+    .ms-button-exploit { border-color:#fca5a5; }
+    .ms-button-port { border-color:var(--green); background:var(--green-tint); font-size:15px; }
+    .module-panel { margin-top:12px; }
+    .module-panel-content { margin-top:10px; padding:14px; border-radius:12px; background:#fbfdfc; border:1px solid var(--line); }
+    .port-module { border-left:4px solid var(--green); }
+    .cve-module-set { margin-top:16px; padding:14px; border-radius:12px; background:#fbfdfc; border:1px solid var(--line); }
+    .cve-module-title { font-weight:800; font-size:16px; margin-bottom:6px; color:var(--ink); }
+    .port-module-heading { font-weight:800; margin-bottom:6px; color:var(--ink); }
+    .service-candidate { border-left:4px solid #3b82f6; }
+    .cve-linked { border-left:4px solid var(--green); }
+
+    .cve-link { color:var(--green-dark); text-decoration:none; font-weight:600; }
+    .cve-link:hover { text-decoration:underline; }
+    .back {
+        display:inline-block; margin-top:10px; margin-right:8px; text-decoration:none; color:#fff;
+        background:linear-gradient(135deg,var(--green),var(--green-dark)); padding:12px 20px;
+        border-radius:10px; font-weight:700; box-shadow:0 8px 18px rgba(2,132,199,0.26);
+    }
+    .back:hover { box-shadow:0 10px 24px rgba(2,132,199,0.36); }
+    .back-ghost {
+        display:inline-block; margin-top:10px; margin-right:8px; text-decoration:none;
+        color:var(--green-dark); background:var(--green-tint); border:1px solid var(--green-soft);
+        padding:12px 20px; border-radius:10px; font-weight:700; cursor:pointer;
+    }
+    .back-ghost:hover { background:var(--green-soft); }
+    .export-wrap { position:relative; display:inline-block; }
+    .export-menu {
+        display:none; position:absolute; left:0; top:108%; z-index:30; min-width:180px;
+        background:var(--white); border:1px solid var(--line); border-radius:12px;
+        box-shadow:0 12px 30px rgba(8,47,73,.18); overflow:hidden;
+    }
+    .export-wrap.open .export-menu { display:block; }
+    .export-menu a {
+        display:block; padding:11px 15px; color:var(--text); text-decoration:none;
+        font-size:14px; font-weight:600;
+    }
+    .export-menu a:hover { background:var(--green-tint); color:var(--green-dark); }
+
+    @media (max-width:900px) {
+        .metasploit-summary { grid-template-columns:repeat(2,1fr); }
+        .context-grid { grid-template-columns:1fr; }
+        .risk-grid { grid-template-columns:repeat(2,1fr); }
+        .chart-dashboard { grid-template-columns:1fr; }
+    }
+    @media (max-width:800px) {
+        .stats { grid-template-columns:1fr; }
+        .risk-grid { grid-template-columns:1fr; }
+        .metasploit-summary { grid-template-columns:1fr; }
+    }
+
+
+    html { scroll-behavior:smooth; }
+    .shell { display:grid; grid-template-columns:240px 1fr; gap:22px; align-items:start; }
+    .side { position:sticky; top:84px; background:var(--white); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:0 6px 22px rgba(8,47,73,.06); }
+    .side h4 { margin:4px 8px 10px; color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.6px; }
+    .navbtn { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-radius:10px; color:#334155; font-weight:600; font-size:14px; cursor:pointer; margin-bottom:4px; text-decoration:none; }
+    .navbtn:hover { background:var(--tint); }
+    .navbtn.active { background:var(--soft); color:var(--p2); }
+    .navbtn .count { font-size:12px; background:#fff; border:1px solid var(--line); border-radius:999px; padding:2px 8px; color:var(--muted); }
+    .navbtn.active .count { background:var(--p); color:#fff; border-color:var(--p); }
+    .header, .card, #sec-overview { scroll-margin-top:84px; }
+    h2[id] { scroll-margin-top:84px; }
+    @media (max-width:980px){ .shell { grid-template-columns:1fr; } .side { position:static; } }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+
+<body>
+
+<div class="navbar">
+    <div class="brand">
+        <svg width="30" height="30" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="11" fill="url(#gnav)"/><path d="M20 8 L30 12 V20 C30 26 25.5 29.6 20 31.6 C14.5 29.6 10 26 10 20 V12 Z" fill="#fff" fill-opacity="0.14" stroke="#fff" stroke-width="1.5"/><path d="M14.5 17.5 L20 27 L25.5 17.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="20" cy="14" r="1.9" fill="#fff"/><defs><linearGradient id="gnav" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#0369a1"/></linearGradient></defs></svg>
+        Vuln<span style="color:#0284c7;">X</span>
+    </div>
+    <div class="nav-actions">
+        <a href="/">New Scan</a>
+        <a href="/history">Scan History</a>
+    </div>
+</div>
+
+
+<div class="container">
+
+<div class="shell">
+<aside class="side">
+    <h4>Sections</h4>
+    <a class="navbtn" href="#sec-overview">Overview</a>
+    <a class="navbtn" href="#sec-risk">Risk Overview</a>
+    <a class="navbtn" href="#sec-charts">Visual Summary</a>
+    <a class="navbtn" href="#sec-surface">Attack Surface</a>
+    <a class="navbtn" href="#sec-findings">Findings <span class="count">{{ assessment.finding_count }}</span></a>
+    <a class="navbtn" href="#sec-metasploit">Metasploit</a>
+    <a class="navbtn" href="#sec-services">Services</a>
+
+    <h4 style="margin-top:14px;">Filter findings</h4>
+    <div class="navbtn filter-btn active" data-filter="ALL">All <span class="count">{{ assessment.finding_count }}</span></div>
+    <div class="navbtn filter-btn" data-filter="CRITICAL">Critical <span class="count">{{ assessment.risk_counts.CRITICAL }}</span></div>
+    <div class="navbtn filter-btn" data-filter="HIGH">High <span class="count">{{ assessment.risk_counts.HIGH }}</span></div>
+    <div class="navbtn filter-btn" data-filter="MEDIUM">Medium <span class="count">{{ assessment.risk_counts.MEDIUM }}</span></div>
+    <div class="navbtn filter-btn" data-filter="LOW">Low <span class="count">{{ assessment.risk_counts.LOW }}</span></div>
+    <div class="navbtn filter-btn" data-filter="INFO">Info <span class="count">{{ assessment.risk_counts.INFO }}</span></div>
+</aside>
+<div class="maincol">
+
+    <!-- =========================================
+         HEADER
+         ========================================= -->
+
+    <div class="header" id="sec-overview">
+
+        <h1>
+            VulnX Scan Results
+        </h1>
+
+        <div class="target">
+
+            Target:
+            {{ target }}
+
+        </div>
+
+        <div class="muted">
+
+            Scan ID:
+            {{ scan_id }}
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         BASIC STATISTICS
+         ========================================= -->
+
+    <div class="stats">
+
+        <div class="stat">
+
+            <div class="muted">
+                Hosts Scanned
+            </div>
+
+            <div class="stat-value">
+                {{ summary.hosts_scanned }}
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="muted">
+                Open Ports
+            </div>
+
+            <div class="stat-value">
+                {{ summary.total_open_ports }}
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="muted">
+                Findings
+            </div>
+
+            <div class="stat-value">
+                {{ assessment.finding_count }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         ENVIRONMENTAL RISK CONTEXT
+         ========================================= -->
+
+    <div class="card">
+
+        <h2>
+            Environmental Risk Context
+        </h2>
+
+        <div class="muted">
+            Environmental factors used by VulnX
+            to calculate context-aware
+            vulnerability prioritization.
+        </div>
+
+        <div class="context-grid">
+
+            <div class="context-item">
+
+                <div class="context-label">
+                    Asset Criticality
+                </div>
+
+                <div class="context-value">
+                    {{ assessment.context.asset_criticality }}
+                </div>
+
+            </div>
+
+
+            <div class="context-item">
+
+                <div class="context-label">
+                    Network Exposure
+                </div>
+
+                <div class="context-value">
+                    {{ assessment.context.network_exposure }}
+                </div>
+
+            </div>
+
+
+            <div class="context-item">
+
+                <div class="context-label">
+                    Service Importance
+                </div>
+
+                <div class="context-value">
+                    {{ assessment.context.service_importance }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {% if assessment.findings %}
+
+            {% set first_finding = assessment.findings[0] %}
+
+            {% if first_finding.context_multiplier is defined %}
+
+                <div class="context-multiplier">
+
+                    <strong>
+                        Context Multiplier:
+                    </strong>
+
+                    {{ first_finding.context_multiplier }}
+
+                </div>
+
+            {% endif %}
+
+        {% endif %}
+
+
+        <div class="context-note">
+
+            The context multiplier is an additional
+            VulnX prioritization factor. It does not
+            modify the underlying CVSS score.
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         RISK OVERVIEW
+         ========================================= -->
+
+    <div class="card">
+
+        <h2 id="sec-risk">
+            Risk Overview
+        </h2>
+
+        <div class="risk-grid">
+
+            <div class="risk-box critical">
+
+                <div>
+                    Critical
+                </div>
+
+                <div class="stat-value">
+                    {{ assessment.risk_counts.CRITICAL }}
+                </div>
+
+            </div>
+
+
+            <div class="risk-box high">
+
+                <div>
+                    High
+                </div>
+
+                <div class="stat-value">
+                    {{ assessment.risk_counts.HIGH }}
+                </div>
+
+            </div>
+
+
+            <div class="risk-box medium">
+
+                <div>
+                    Medium
+                </div>
+
+                <div class="stat-value">
+                    {{ assessment.risk_counts.MEDIUM }}
+                </div>
+
+            </div>
+
+
+            <div class="risk-box low">
+
+                <div>
+                    Low
+                </div>
+
+                <div class="stat-value">
+                    {{ assessment.risk_counts.LOW }}
+                </div>
+
+            </div>
+
+
+            <div class="risk-box info">
+
+                <div>
+                    Info
+                </div>
+
+                <div class="stat-value">
+                    {{ assessment.risk_counts.INFO }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ========== VISUAL SUMMARY (charts) ========== -->
+    <div class="card">
+        <h2 id="sec-charts">Visual Summary</h2>
+        <div class="muted">Risk distribution and Metasploit module intelligence at a glance.</div>
+        <div class="chart-dashboard">
+            <div class="chart-card">
+                <div class="chart-title">Risk Distribution</div>
+                <div class="chart-wrap"><canvas id="riskChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Metasploit Module Candidates</div>
+                <div class="chart-wrap"><canvas id="msChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========== ATTACK SURFACE ========== -->
+    <div class="card">
+        <h2 id="sec-surface">Attack Surface</h2>
+        <div class="muted">Open ports on {{ target }}, each colored by the highest risk found on it.</div>
+        <div style="position:relative;width:100%;">
+            <svg id="surface" viewBox="0 0 800 400" style="width:100%;height:auto;"></svg>
+        </div>
+        <div id="surfaceLegend" style="display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;font-size:13px;color:#475569;"></div>
+    </div>
+
+    <script id="surfaceData" type="application/json">
+    {
+      "host": {{ target|tojson }},
+      "ports": [
+        {% for host in summary.hosts %}{% for p in host.open_ports %}{"port": {{ p.port|tojson }}, "service": {{ (p.service or "")|tojson }}, "product": {{ (p.product or "")|tojson }}},
+        {% endfor %}{% endfor %}{"port": null, "service": "", "product": ""}
+      ],
+      "findings": [
+        {% for f in assessment.findings %}{"port": {{ f.port|tojson }}, "risk_level": {{ (f.risk_level or "INFO")|tojson }}},
+        {% endfor %}{"port": null, "risk_level": "INFO"}
+      ]
+    }
+    </script>
+
+    <script>
+    (function(){
+      var raw = document.getElementById("surfaceData");
+      if(!raw) return;
+      var data; try { data = JSON.parse(raw.textContent); } catch(e){ return; }
+      var ports = (data.ports||[]).filter(function(p){return p.port!==null && p.port!==undefined;});
+      var finds = (data.findings||[]).filter(function(f){return f.port!==null && f.port!==undefined;});
+      var order = {CRITICAL:0,HIGH:1,MEDIUM:2,LOW:3,INFO:4};
+      var colors = {CRITICAL:"#ef4444",HIGH:"#f97316",MEDIUM:"#eab308",LOW:"#22c55e",INFO:"#94a3b8"};
+      var worst = {};
+      finds.forEach(function(f){
+        var p=String(f.port), b=(f.risk_level||"INFO").toUpperCase();
+        if(!(b in order)) b="INFO";
+        if(!(p in worst) || order[b] < order[worst[p]]) worst[p]=b;
+      });
+      var svg = document.getElementById("surface");
+      var NS="http://www.w3.org/2000/svg";
+      function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e;}
+      var seen={}, uniq=[];
+      ports.forEach(function(p){var k=String(p.port); if(!(k in seen)){seen[k]=1; uniq.push(p);}});
+      if(uniq.length===0){
+        var m=el("text",{x:400,y:200,"text-anchor":"middle",fill:"#6b7280","font-size":16});
+        m.textContent="No open ports to display."; svg.appendChild(m); return;
+      }
+      var cx=400, cy=200, R= uniq.length>1 ? 140 : 0;
+      uniq.forEach(function(p,i){
+        var ang=(-Math.PI/2)+(2*Math.PI*i/uniq.length);
+        var x= uniq.length>1 ? cx+R*Math.cos(ang) : cx+190;
+        var y= uniq.length>1 ? cy+R*Math.sin(ang) : cy;
+        var band=worst[String(p.port)]||null;
+        var col=band?colors[band]:"#0284c7";
+        svg.appendChild(el("line",{x1:cx,y1:cy,x2:x,y2:y,stroke:"#cbd5e1","stroke-width":2}));
+        svg.appendChild(el("circle",{cx:x,cy:y,r:32,fill:col,"fill-opacity":0.15,stroke:col,"stroke-width":2.5}));
+        var t1=el("text",{x:x,y:y-1,"text-anchor":"middle",fill:"#0c2a3f","font-size":13,"font-weight":"700"});
+        t1.textContent=p.port+"/"+(p.service||""); svg.appendChild(t1);
+        var t2=el("text",{x:x,y:y+15,"text-anchor":"middle",fill:"#6b7280","font-size":11});
+        t2.textContent=band||"no CVE"; svg.appendChild(t2);
+      });
+      svg.appendChild(el("circle",{cx:cx,cy:cy,r:42,fill:"#0284c7",stroke:"#0369a1","stroke-width":3}));
+      var ht=el("text",{x:cx,y:cy-3,"text-anchor":"middle",fill:"#fff","font-size":13,"font-weight":"800"});
+      ht.textContent="HOST"; svg.appendChild(ht);
+      var hi=el("text",{x:cx,y:cy+14,"text-anchor":"middle",fill:"#e0f2fe","font-size":11});
+      hi.textContent=data.host||""; svg.appendChild(hi);
+      var leg=document.getElementById("surfaceLegend");
+      [["CRITICAL",colors.CRITICAL],["HIGH",colors.HIGH],["MEDIUM",colors.MEDIUM],["LOW",colors.LOW],["INFO",colors.INFO]].forEach(function(pair){
+        var s=document.createElement("span"); s.style.display="inline-flex"; s.style.alignItems="center"; s.style.gap="6px";
+        s.innerHTML='<span style="width:12px;height:12px;border-radius:3px;background:'+pair[1]+';display:inline-block;"></span>'+pair[0];
+        leg.appendChild(s);
+      });
+    })();
+    </script>
+
+
+    <!-- =========================================
+         METASPLOIT INTELLIGENCE
+         ========================================= -->
+
+    {% if assessment.metasploit is defined %}
+
+    <div class="card">
+
+        <h2 id="sec-metasploit">
+            Metasploit Intelligence
+        </h2>
+
+        <div class="muted">
+
+            Metasploit module discovery performed from
+            the observed VulnX assessment context.
+
+        </div>
+
+
+        {% set ms = assessment.metasploit %}
+
+        {% set ms_summary = ms.summary %}
+
+
+        <!-- =====================================
+             SUMMARY
+             ===================================== -->
+
+        <div class="metasploit-summary">
+
+            <div class="metasploit-stat">
+
+                <div class="metasploit-stat-label">
+                    CVE-Linked Auxiliary
+                </div>
+
+                <div class="metasploit-stat-value">
+                    {{ ms_summary.cve_auxiliary }}
+                </div>
+
+            </div>
+
+
+            <div class="metasploit-stat">
+
+                <div class="metasploit-stat-label">
+                    CVE-Linked Exploit
+                </div>
+
+                <div class="metasploit-stat-value">
+                    {{ ms_summary.cve_exploit }}
+                </div>
+
+            </div>
+
+
+            <div class="metasploit-stat">
+
+                <div class="metasploit-stat-label">
+                    Service Auxiliary
+                </div>
+
+                <div class="metasploit-stat-value">
+                    {{ ms_summary.service_auxiliary }}
+                </div>
+
+            </div>
+
+
+            <div class="metasploit-stat">
+
+                <div class="metasploit-stat-label">
+                    Service Exploit
+                </div>
+
+                <div class="metasploit-stat-value">
+                    {{ ms_summary.service_exploit }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================
+             AUXILIARY / EXPLOIT TOGGLE
+             ===================================== -->
+
+        <div class="ms-toggle-hint">
+            Focus on one module type at a time. Auxiliary modules are for
+            scanning and enumeration; exploit modules attempt to gain access.
+        </div>
+
+        <div class="ms-toggle" id="ms-toggle">
+            <button type="button" class="ms-toggle-btn active" onclick="msView('all', this)">
+                All Modules
+            </button>
+            <button type="button" class="ms-toggle-btn" onclick="msView('aux', this)">
+                Auxiliary Only
+            </button>
+            <button type="button" class="ms-toggle-btn" onclick="msView('exploit', this)">
+                Exploit Only
+            </button>
+        </div>
+
+
+        <!-- =====================================
+             VULNERABILITY / CVE-LINKED MODULES
+             ===================================== -->
+
+        <div class="module-group">
+
+            <h3>
+                Vulnerability / CVE-Linked Modules
+            </h3>
+
+            <div class="muted">
+                Only modules directly associated by Metasploit
+                with CVEs attached to VulnX findings are shown
+                here. Auxiliary and Exploit modules stay separate
+                behind expandable buttons.
+            </div>
+
+            {% set ns_all = namespace(found=false) %}
+
+            {% for finding in assessment.findings %}
+
+                {% if finding.cves and finding.metasploit_cve_linked is defined %}
+
+                    {% for cve in finding.cves %}
+
+                        {% set ns = namespace(aux=0, exploit=0) %}
+
+                        {% for module in finding.metasploit_cve_linked %}
+                            {% if module.cve == cve and module.module_type == "auxiliary" %}
+                                {% set ns.aux = ns.aux + 1 %}
+                            {% elif module.cve == cve and module.module_type == "exploit" %}
+                                {% set ns.exploit = ns.exploit + 1 %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% set ns_all.found = true %}
+
+                        <div class="cve-module-set">
+
+                            <div class="cve-module-title">
+                                {{ cve }}
+                            </div>
+
+                            <div class="muted">
+                                {{ finding.title }}
+                                — {{ finding.host }}:{{ finding.port }}/{{ finding.protocol }}
+                            </div>
+
+                            <div class="module-button-group">
+
+                                <details class="module-panel">
+                                    <summary class="ms-button ms-button-aux">
+                                        Auxiliary Modules ({{ ns.aux }})
+                                    </summary>
+
+                                    <div class="module-panel-content">
+                                        {% if ns.aux > 0 %}
+                                            {% for module in finding.metasploit_cve_linked %}
+                                                {% if module.cve == cve and module.module_type == "auxiliary" %}
+                                                    <div class="module-card cve-linked">
+                                                        <div class="module-name">
+                                                            {{ module.module_name }}
+                                                        </div>
+                                                        <div class="module-meta">
+                                                            <span class="badge module-type-auxiliary">Type: Auxiliary</span>
+                                                            <span class="badge">CVE: {{ module.cve }}</span>
+                                                            <span class="badge">Rank: {{ module.rank or "Unknown" }}</span>
+                                                            <span class="badge">Check: {{ module.check or "Unknown" }}</span>
+                                                            <span class="badge">Disclosure: {{ module.disclosure_date or "Unknown" }}</span>
+                                                        </div>
+                                                        <div class="module-description">
+                                                            <strong>Description:</strong>
+                                                            {{ module.description or "No description available." }}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="module-empty">
+                                                No directly CVE-linked auxiliary modules were returned for {{ cve }}.
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </details>
+
+                                <details class="module-panel">
+                                    <summary class="ms-button ms-button-exploit">
+                                        Exploit Modules ({{ ns.exploit }})
+                                    </summary>
+
+                                    <div class="module-panel-content">
+                                        {% if ns.exploit > 0 %}
+                                            {% for module in finding.metasploit_cve_linked %}
+                                                {% if module.cve == cve and module.module_type == "exploit" %}
+                                                    <div class="module-card cve-linked">
+                                                        <div class="module-name">
+                                                            {{ module.module_name }}
+                                                        </div>
+                                                        <div class="module-meta">
+                                                            <span class="badge module-type-exploit">Type: Exploit</span>
+                                                            <span class="badge">CVE: {{ module.cve }}</span>
+                                                            <span class="badge">Rank: {{ module.rank or "Unknown" }}</span>
+                                                            <span class="badge">Check: {{ module.check or "Unknown" }}</span>
+                                                            <span class="badge">Disclosure: {{ module.disclosure_date or "Unknown" }}</span>
+                                                        </div>
+                                                        <div class="module-description">
+                                                            <strong>Description:</strong>
+                                                            {{ module.description or "No description available." }}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="module-empty">
+                                                No directly CVE-linked exploit modules were returned for {{ cve }}.
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </details>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endfor %}
+
+            {% if not ns_all.found %}
+                <div class="module-empty">
+                    No CVE-bearing vulnerabilities are available for
+                    vulnerability-specific Metasploit mapping.
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <!-- =====================================
+             PORT-LEVEL CANDIDATE MODULES
+             ===================================== -->
+
+        <div class="module-group">
+
+            <h3>
+                Port-Level Metasploit Modules
+            </h3>
+
+            <div class="muted">
+                All broader auxiliary and exploit candidates are
+                organized by the actual open port and observed
+                service. They remain hidden until the port button
+                is opened.
+            </div>
+
+            {% if ms.port_candidates %}
+
+                {% for port_key, port_data in ms.port_candidates.items() %}
+
+                    {% set pns = namespace(aux=0, exploit=0) %}
+                    {% for module in port_data.auxiliary %}
+                        {% set pns.aux = pns.aux + 1 %}
+                    {% endfor %}
+                    {% for module in port_data.exploit %}
+                        {% set pns.exploit = pns.exploit + 1 %}
+                    {% endfor %}
+
+                    <div class="module-group">
+
+                        <details class="module-panel">
+                            <summary class="ms-button ms-button-port">
+                                View All Metasploit Modules for Port {{ port_data.port }}/{{ port_data.protocol }}
+                            </summary>
+
+                            <div class="module-panel-content">
+
+                                <div class="port-module-heading">
+                                    {{ port_data.port }}/{{ port_data.protocol }}
+                                    — {{ port_data.service or "Unknown Service" }}
+                                </div>
+
+                                <div class="muted">
+                                    Host: {{ port_data.host }}
+                                    {% if port_data.product %}| Product: {{ port_data.product }}{% endif %}
+                                    {% if port_data.version %}| Version: {{ port_data.version }}{% endif %}
+                                </div>
+
+                                <div class="module-button-group">
+
+                                    <details class="module-panel">
+                                        <summary class="ms-button ms-button-aux">
+                                            Auxiliary Modules ({{ pns.aux }})
+                                        </summary>
+
+                                        <div class="module-panel-content">
+                                            {% if pns.aux > 0 %}
+                                                {% for module in port_data.auxiliary %}
+                                                    <div class="module-card port-module">
+                                                        <div class="module-name">
+                                                            {{ module.module_name }}
+                                                        </div>
+                                                        <div class="module-meta">
+                                                            <span class="badge module-type-auxiliary">Type: Auxiliary</span>
+                                                            <span class="badge">Rank: {{ module.rank or "Unknown" }}</span>
+                                                            <span class="badge">Check: {{ module.check or "Unknown" }}</span>
+                                                            <span class="badge">Disclosure: {{ module.disclosure_date or "Unknown" }}</span>
+                                                        </div>
+                                                        <div class="module-description">
+                                                            <strong>Description:</strong>
+                                                            {{ module.description or "No description available." }}
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <div class="module-empty">
+                                                    No auxiliary modules were returned for this port/service.
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </details>
+
+                                    <details class="module-panel">
+                                        <summary class="ms-button ms-button-exploit">
+                                            Exploit Modules ({{ pns.exploit }})
+                                        </summary>
+
+                                        <div class="module-panel-content">
+                                            {% if pns.exploit > 0 %}
+                                                {% for module in port_data.exploit %}
+                                                    <div class="module-card port-module">
+                                                        <div class="module-name">
+                                                            {{ module.module_name }}
+                                                        </div>
+                                                        <div class="module-meta">
+                                                            <span class="badge module-type-exploit">Type: Exploit</span>
+                                                            <span class="badge">Rank: {{ module.rank or "Unknown" }}</span>
+                                                            <span class="badge">Check: {{ module.check or "Unknown" }}</span>
+                                                            <span class="badge">Disclosure: {{ module.disclosure_date or "Unknown" }}</span>
+                                                        </div>
+                                                        <div class="module-description">
+                                                            <strong>Description:</strong>
+                                                            {{ module.description or "No description available." }}
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <div class="module-empty">
+                                                    No exploit modules were returned for this port/service.
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </details>
+
+                                </div>
+
+                            </div>
+                        </details>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+                <div class="module-empty">
+                    No port-level Metasploit candidates were discovered.
+                </div>
+            {% endif %}
+
+            <div class="module-note">
+                <strong>Important:</strong>
+                Metasploit module discovery is an intelligence and
+                candidate-identification step. A module being associated
+                with a CVE or service does not establish that the observed
+                target is vulnerable or exploitable. VulnX does not
+                automatically execute auxiliary or exploit modules.
+            </div>
+
+        </div>
+
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- =========================================
+         DISCOVERED SERVICES
+         ========================================= -->
+
+    <div class="card">
+
+        <h2 id="sec-services">
+            Discovered Services
+        </h2>
+
+
+        {% for host in summary.hosts %}
+
+            {% for address in host.addresses %}
+
+                <p>
+
+                    <strong>
+                        {{ address.type }}
+                    </strong>:
+
+                    {{ address.address }}
+
+                </p>
+
+            {% endfor %}
+
+
+            {% for port in host.open_ports %}
+
+                <div class="finding">
+
+                    <div class="finding-title">
+
+                        {{ port.port }}/{{ port.protocol }}
+
+                    </div>
+
+
+                    <div class="detail">
+
+                        <strong>
+                            Service:
+                        </strong>
+
+                        {{ port.service or "Unknown" }}
+
+                    </div>
+
+
+                    {% if port.product %}
+
+                        <div class="detail">
+
+                            <strong>
+                                Product:
+                            </strong>
+
+                            {{ port.product }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if port.version %}
+
+                        <div class="detail">
+
+                            <strong>
+                                Version:
+                            </strong>
+
+                            {{ port.version }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if port.cpe %}
+
+                        <div class="detail">
+
+                            <strong>
+                                CPE:
+                            </strong>
+
+                            {{ port.cpe | join(", ") }}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- =========================================
+         SECURITY FINDINGS
+         ========================================= -->
+
+    <div class="card">
+
+        <h2 id="sec-findings">
+            Security Findings
+        </h2>
+
+
+        {% if assessment.findings %}
+
+
+            {% for finding in assessment.findings %}
+
+                <div class="finding">
+
+
+                    <!-- FINDING TITLE -->
+
+                    <div class="finding-title">
+
+                        {{ finding.title }}
+
+                    </div>
+
+
+                    <!-- BADGES -->
+
+                    <div>
+
+                        <span class="badge">
+
+                            Severity:
+                            {{ finding.severity }}
+
+                        </span>
+
+
+                        <span class="badge">
+
+                            Risk:
+                            {{ finding.risk_level }}
+
+                        </span>
+
+
+                        <span class="badge">
+
+                            Risk Score:
+                            {{ finding.risk_score }}
+
+                        </span>
+
+
+                        <span class="badge">
+
+                            Confidence:
+                            {{ finding.confidence }}
+
+                        </span>
+
+
+                        <span class="badge">
+
+                            Context:
+                            {{ finding.context_multiplier }}
+
+                        </span>
+
+
+                        {% if finding.status == "REQUIRES_VALIDATION" %}
+
+                            <span class="badge badge-validation">
+
+                                Status:
+                                {{ finding.status }}
+
+                            </span>
+
+                        {% elif finding.status == "POTENTIALLY_VULNERABLE" %}
+
+                            <span class="badge badge-potential">
+
+                                Status:
+                                {{ finding.status }}
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge badge-observed">
+
+                                Status:
+                                {{ finding.status }}
+
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- ENVIRONMENTAL CONTEXT -->
+
+                    <div class="finding-context">
+
+                        <div class="finding-context-title">
+
+                            Environmental Context
+
+                        </div>
+
+
+                        <div class="detail">
+
+                            <strong>
+                                Asset Criticality:
+                            </strong>
+
+                            {{ finding.asset_criticality }}
+
+                        </div>
+
+
+                        <div class="detail">
+
+                            <strong>
+                                Network Exposure:
+                            </strong>
+
+                            {{ finding.network_exposure }}
+
+                        </div>
+
+
+                        <div class="detail">
+
+                            <strong>
+                                Service Importance:
+                            </strong>
+
+                            {{ finding.service_importance }}
+
+                        </div>
+
+
+                        <div class="detail">
+
+                            <strong>
+                                Context Multiplier:
+                            </strong>
+
+                            {{ finding.context_multiplier }}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CVE -->
+
+                    {% if finding.cves %}
+
+                        <div class="detail">
+
+                            <strong>
+                                CVE:
+                            </strong>
+
+
+                            {% for cve in finding.cves %}
+
+                                <a
+                                    class="cve-link"
+                                    href="https://nvd.nist.gov/vuln/detail/{{ cve }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+
+                                    {{ cve }}
+
+                                </a>
+
+
+                                {% if not loop.last %}
+                                    ,
+                                {% endif %}
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- CVSS -->
+
+                    {% if finding.cvss is defined and finding.cvss is not none %}
+
+                        <div class="cvss-box">
+
+                            <div class="cvss-title">
+                                CVSS
+                            </div>
+
+
+                            {% if finding.cvss.base_score is defined %}
+
+                                <div class="detail">
+
+                                    <strong>
+                                        Base Score:
+                                    </strong>
+
+                                    {{ finding.cvss.base_score }}
+
+                                </div>
+
+
+                                {% if finding.cvss.version %}
+
+                                    <div class="detail">
+
+                                        <strong>
+                                            Version:
+                                        </strong>
+
+                                        {{ finding.cvss.version }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if finding.cvss.severity %}
+
+                                    <div class="detail">
+
+                                        <strong>
+                                            Severity:
+                                        </strong>
+
+                                        {{ finding.cvss.severity }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if finding.cvss.vector %}
+
+                                    <div class="detail">
+
+                                        <strong>
+                                            Vector:
+                                        </strong>
+
+                                        {{ finding.cvss.vector }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                            {% else %}
+
+                                <div class="detail">
+
+                                    <strong>
+                                        Base Score:
+                                    </strong>
+
+                                    {{ finding.cvss }}
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- NVD APPLICABILITY -->
+
+                    {% if finding.applicability %}
+
+                        <div class="detail">
+
+                            <strong>
+                                NVD Applicability:
+                            </strong>
+
+                            {{ finding.applicability }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- VALIDATION -->
+
+                    {% if finding.validation_reason %}
+
+                        <div class="detail">
+
+                            <strong>
+                                Validation Note:
+                            </strong>
+
+                            {{ finding.validation_reason }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- RISK NOTE -->
+
+                    {% if finding.risk_note %}
+
+                        <div class="detail">
+
+                            <strong>
+                                Risk Note:
+                            </strong>
+
+                            {{ finding.risk_note }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- METASPLOIT CVE-LINKED MODULE BUTTONS FOR THIS FINDING -->
+
+                    {% if finding.cves and finding.metasploit_cve_linked is defined %}
+
+                        <div class="finding-context">
+
+                            <div class="finding-context-title">
+                                Vulnerability-Specific Metasploit Modules
+                            </div>
+
+                            <div class="muted">
+                                Modules are grouped by the CVE attached to this finding.
+                            </div>
+
+                            {% for cve in finding.cves %}
+
+                                {% set fns = namespace(aux=0, exploit=0) %}
+
+                                {% for module in finding.metasploit_cve_linked %}
+                                    {% if module.cve == cve and module.module_type == "auxiliary" %}
+                                        {% set fns.aux = fns.aux + 1 %}
+                                    {% elif module.cve == cve and module.module_type == "exploit" %}
+                                        {% set fns.exploit = fns.exploit + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                <div class="cve-module-set">
+
+                                    <div class="cve-module-title">
+                                        {{ cve }}
+                                    </div>
+
+                                    <div class="module-button-group">
+
+                                        <details class="module-panel">
+                                            <summary class="ms-button ms-button-aux">
+                                                Auxiliary Modules ({{ fns.aux }})
+                                            </summary>
+
+                                            <div class="module-panel-content">
+                                                {% if fns.aux > 0 %}
+                                                    {% for module in finding.metasploit_cve_linked %}
+                                                        {% if module.cve == cve and module.module_type == "auxiliary" %}
+                                                            <div class="module-card cve-linked">
+                                                                <div class="module-name">
+                                                                    {{ module.module_name }}
+                                                                </div>
+                                                                <div class="module-meta">
+                                                                    <span class="badge module-type-auxiliary">Type: Auxiliary</span>
+                                                                    <span class="badge">CVE: {{ module.cve }}</span>
+                                                                    <span class="badge">Rank: {{ module.rank or "Unknown" }}</span>
+                                                                    <span class="badge">Check: {{ module.check or "Unknown" }}</span>
+                                                                </div>
+                                                                <div class="module-description">
+                                                                    {{ module.description or "No description available." }}
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <div class="module-empty">
+                                                        No directly CVE-linked auxiliary modules were returned for {{ cve }}.
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </details>
+
+                                        <details class="module-panel">
+                                            <summary class="ms-button ms-button-exploit">
+                                                Exploit Modules ({{ fns.exploit }})
+                                            </summary>
+
+                                            <div class="module-panel-content">
+                                                {% if fns.exploit > 0 %}
+                                                    {% for module in finding.metasploit_cve_linked %}
+                                                        {% if module.cve == cve and module.module_type == "exploit" %}
+                                                            <div class="module-card cve-linked">
+                                                                <div class="module-name">
+                                                                    {{ module.module_name }}
+                                                                </div>
+                                                                <div class="module-meta">
+                                                                    <span class="badge module-type-exploit">Type: Exploit</span>
+                                                                    <span class="badge">CVE: {{ module.cve }}</span>
+                                                                    <span class="badge">Rank: {{ module.rank or "Unknown" }}</span>
+                                                                    <span class="badge">Check: {{ module.check or "Unknown" }}</span>
+                                                                </div>
+                                                                <div class="module-description">
+                                                                    {{ module.description or "No description available." }}
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <div class="module-empty">
+                                                        No directly CVE-linked exploit modules were returned for {{ cve }}.
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </details>
+
+                                    </div>
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- HOST -->
+
+                    <div class="detail">
+
+                        <strong>
+                            Host:
+                        </strong>
+
+                        {{ finding.host }}
+
+                    </div>
+
+
+                    <!-- PORT -->
+
+                    <div class="detail">
+
+                        <strong>
+                            Port:
+                        </strong>
+
+                        {{ finding.port }}/{{ finding.protocol }}
+
+                    </div>
+
+
+                    <!-- PRODUCT -->
+
+                    {% if finding.product %}
+
+                        <div class="detail">
+
+                            <strong>
+                                Product:
+                            </strong>
+
+                            {{ finding.product }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- VERSION -->
+
+                    {% if finding.version %}
+
+                        <div class="detail">
+
+                            <strong>
+                                Version:
+                            </strong>
+
+                            {{ finding.version }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- EVIDENCE -->
+
+                    <div class="detail">
+
+                        <strong>
+                            Evidence:
+                        </strong>
+
+                        {{ finding.evidence }}
+
+                    </div>
+
+
+                    <!-- RECOMMENDATION -->
+
+                    <div class="detail">
+
+                        <strong>
+                            Recommendation:
+                        </strong>
+
+                        {{ finding.recommendation }}
+
+                    </div>
+
+
+                    <!-- NVD URL -->
+
+                    {% if finding.nvd_url %}
+
+                        <div class="detail">
+
+                            <strong>
+                                NVD Reference:
+                            </strong>
+
+
+                            <a
+                                class="cve-link"
+                                href="{{ finding.nvd_url }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+
+                                View NVD Record
+
+                            </a>
+
+                        </div>
+
+                    {% endif %}
+
+
+                </div>
+
+            {% endfor %}
+
+
+        {% else %}
+
+            <p class="muted">
+
+                No findings were generated.
+
+            </p>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =========================================
+         NAVIGATION
+         ========================================= -->
+
+    <a
+        href="/"
+        class="back"
+    >
+        New Scan
+    </a>
+
+
+    <a
+        href="/history"
+        class="back"
+    >
+        Scan History
+    </a>
+
+
+    <a
+        href="/report/{{ scan_id }}"
+        class="back"
+    >
+        Download PDF Report
+    </a>
+
+
+    <span class="export-wrap">
+
+        <button
+            type="button"
+            class="back-ghost"
+            onclick="toggleResultsExport(this)"
+        >
+            Export Data &#9662;
+        </button>
+
+        <span class="export-menu">
+            <a href="/export/{{ scan_id }}/csv">CSV (spreadsheet)</a>
+            <a href="/export/{{ scan_id }}/json">JSON</a>
+            <a href="/export/{{ scan_id }}/xml">XML</a>
+        </span>
+
+    </span>
+
+</div><!-- /maincol -->
+</div><!-- /shell -->
+
+</div>
+
+
+<script>
+(function () {
+    const green = "#0284c7";
+    const riskColors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#94a3b8"];
+    const riskData = [
+        {{ assessment.risk_counts.CRITICAL }},
+        {{ assessment.risk_counts.HIGH }},
+        {{ assessment.risk_counts.MEDIUM }},
+        {{ assessment.risk_counts.LOW }},
+        {{ assessment.risk_counts.INFO }}
+    ];
+    const rc = document.getElementById("riskChart");
+    if (rc) {
+        new Chart(rc, {
+            type: "doughnut",
+            data: {
+                labels: ["Critical", "High", "Medium", "Low", "Info"],
+                datasets: [{ data: riskData, backgroundColor: riskColors, borderColor: "#fff", borderWidth: 2 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: "58%",
+                plugins: { legend: { position: "bottom", labels: { color: "#374151", padding: 14 } } }
+            }
+        });
+    }
+
+    {% if ms_summary %}
+    const msData = [
+        {{ ms_summary.cve_auxiliary }},
+        {{ ms_summary.cve_exploit }},
+        {{ ms_summary.service_auxiliary }},
+        {{ ms_summary.service_exploit }}
+    ];
+    {% else %}
+    const msData = [0, 0, 0, 0];
+    {% endif %}
+    const mc = document.getElementById("msChart");
+    if (mc) {
+        new Chart(mc, {
+            type: "bar",
+            data: {
+                labels: ["CVE Aux", "CVE Exploit", "Svc Aux", "Svc Exploit"],
+                datasets: [{ label: "Modules", data: msData,
+                    backgroundColor: ["#38bdf8", "#0284c7", "#7dd3fc", "#0369a1"],
+                    borderRadius: 8 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { color: "#6b7280" }, grid: { color: "#eef2f0" } },
+                          x: { ticks: { color: "#6b7280" }, grid: { display: false } } }
+            }
+        });
+    }
+})();
+</script>
+
+<!-- Collapsible findings: keep title + badges as a clickable header -->
+<script>
+(function(){
+  document.querySelectorAll('.finding').forEach(function(card){
+    var title = card.querySelector('.finding-title');
+    if(!title) return;
+    var kids = Array.prototype.slice.call(card.children);
+    var ti = kids.indexOf(title);
+    var headerEnd = ti + 1;
+    var next = kids[ti+1];
+    // keep an immediately-following badges row visible too
+    if(next && next.tagName === 'DIV' && next.querySelector('.badge')) headerEnd = ti + 2;
+    var body = kids.slice(headerEnd);
+    if(!body.length) return;
+    var wrap = document.createElement('div');
+    body.forEach(function(el){ wrap.appendChild(el); });
+    card.appendChild(wrap);
+    wrap.style.display = 'none';
+    title.style.cursor = 'pointer';
+    title.style.userSelect = 'none';
+    var chev = document.createElement('span');
+    chev.textContent = ' ▶';
+    chev.style.color = '#0284c7';
+    chev.style.fontSize = '14px';
+    title.appendChild(chev);
+    function toggle(){
+      var open = wrap.style.display !== 'none';
+      wrap.style.display = open ? 'none' : 'block';
+      chev.textContent = open ? ' ▶' : ' ▼';
+    }
+    title.addEventListener('click', toggle);
+  });
+})();
+</script>
+
+<script>
+(function(){
+  var main = document.querySelector('.maincol');
+  if(!main) return;
+
+  // ---- group maincol content into sections (tabs) ----
+  // Each element is assigned to the most recent "sec-*" marker seen.
+  // Scripts and the bottom nav buttons stay always visible.
+  var groups = {};           // section -> [elements]
+  var current = 'overview';
+  Array.prototype.slice.call(main.children).forEach(function(el){
+    if(el.tagName === 'SCRIPT') return;
+    if(el.classList && el.classList.contains('back')) { el.dataset.always = '1'; return; }
+    var marker = (el.matches && el.matches('[id^="sec-"]')) ? el
+               : (el.querySelector ? el.querySelector('[id^="sec-"]') : null);
+    if(marker) current = marker.id.replace('sec-','');
+    (groups[current] = groups[current] || []).push(el);
+  });
+
+  function show(sec){
+    Object.keys(groups).forEach(function(s){
+      groups[s].forEach(function(el){ el.style.display = (s === sec) ? '' : 'none'; });
+    });
+    // let responsive charts re-fit now that their panel is visible
+    window.dispatchEvent(new Event('resize'));
+    window.scrollTo(0, 0);
+  }
+
+  // ---- section buttons act as tabs ----
+  var links = document.querySelectorAll('.side a.navbtn');
+  links.forEach(function(a){
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      var sec = a.getAttribute('href').replace('#sec-','');
+      links.forEach(function(x){ x.classList.remove('active'); });
+      a.classList.add('active');
+      show(sec);
+    });
+  });
+
+  // ---- severity filter (also switches to the Findings tab) ----
+  var findCard = document.getElementById('sec-findings');
+  findCard = findCard ? findCard.closest('.card') : null;
+  var fbtns = document.querySelectorAll('.filter-btn');
+  function bandOf(card){
+    var band='';
+    card.querySelectorAll('.badge').forEach(function(b){
+      var t=b.textContent.trim();
+      if(t.indexOf('Risk:')===0) band=t.replace('Risk:','').trim().toUpperCase();
+    });
+    return band;
+  }
+  fbtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      fbtns.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      // activate the Findings tab
+      links.forEach(function(x){ x.classList.toggle('active', x.getAttribute('href') === '#sec-findings'); });
+      show('findings');
+      var f = btn.getAttribute('data-filter');
+      if(!findCard) return;
+      findCard.querySelectorAll('.finding').forEach(function(card){
+        card.style.display = (f === 'ALL' || bandOf(card) === f) ? '' : 'none';
+      });
+    });
+  });
+
+  // default view: Overview
+  links.forEach(function(x){ x.classList.toggle('active', x.getAttribute('href') === '#sec-overview'); });
+  show('overview');
+})();
+</script>
+
+<!-- Metasploit Auxiliary / Exploit toggle -->
+<script>
+  function msView(mode, btn) {
+    // Highlight the active toggle button.
+    document.querySelectorAll('#ms-toggle .ms-toggle-btn').forEach(function (b) {
+      b.classList.remove('active');
+    });
+    btn.classList.add('active');
+
+    // Scope to the Metasploit card that holds this toggle.
+    var card = btn.closest('.card');
+    if (!card) { return; }
+
+    // Auxiliary and exploit panels are the expandable <details> whose
+    // summary carries ms-button-aux / ms-button-exploit.
+    card.querySelectorAll('details.module-panel > summary.ms-button-aux')
+      .forEach(function (s) {
+        s.parentElement.style.display = (mode === 'exploit') ? 'none' : '';
+      });
+
+    card.querySelectorAll('details.module-panel > summary.ms-button-exploit')
+      .forEach(function (s) {
+        s.parentElement.style.display = (mode === 'aux') ? 'none' : '';
+      });
+  }
+
+  // Export data dropdown.
+  function toggleResultsExport(btn) {
+    var wrap = btn.closest('.export-wrap');
+    var wasOpen = wrap.classList.contains('open');
+    document.querySelectorAll('.export-wrap.open').forEach(function (w) {
+      w.classList.remove('open');
+    });
+    if (!wasOpen) { wrap.classList.add('open'); }
+  }
+
+  document.addEventListener('click', function (event) {
+    if (!event.target.closest('.export-wrap')) {
+      document.querySelectorAll('.export-wrap.open').forEach(function (w) {
+        w.classList.remove('open');
+      });
+    }
+  });
+</script>
+
+<!-- footer -->
+<div style="background:#0c2a3f;color:#cfe3f2;padding:40px 40px 20px;margin-top:30px;">
+  <div style="max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:24px;">
+    <div style="max-width:300px;">
+      <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:#fff;margin-bottom:10px;">
+        <svg width="30" height="30" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="11" fill="url(#gf)"/><path d="M20 8 L30 12 V20 C30 26 25.5 29.6 20 31.6 C14.5 29.6 10 26 10 20 V12 Z" fill="#fff" fill-opacity="0.14" stroke="#fff" stroke-width="1.5"/><path d="M14.5 17.5 L20 27 L25.5 17.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="20" cy="14" r="1.9" fill="#fff"/><defs><linearGradient id="gf" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#0369a1"/></linearGradient></defs></svg>
+        Vuln<span style="color:#38bdf8;">X</span>
+      </div>
+      <p style="color:#9fc0da;font-size:13px;line-height:1.6;margin:0;">Integrated network and web vulnerability assessment with context-aware risk prioritization.</p>
+    </div>
+    <div>
+      <div style="color:#fff;font-weight:700;font-size:14px;margin-bottom:12px;">Product</div>
+      <div style="display:flex;flex-direction:column;gap:9px;font-size:14px;">
+        <a href="/" style="color:#b7d3e8;text-decoration:none;">Run a Scan</a>
+        <a href="/history" style="color:#b7d3e8;text-decoration:none;">Scan History</a>
+        <a href="/report/{{ scan_id }}" style="color:#b7d3e8;text-decoration:none;">Download Report</a>
+      </div>
+    </div>
+    <div>
+      <div style="color:#fff;font-weight:700;font-size:14px;margin-bottom:12px;">Company</div>
+      <div style="display:flex;flex-direction:column;gap:9px;font-size:14px;">
+        <a href="/" style="color:#b7d3e8;text-decoration:none;">About</a>
+        <a href="/" style="color:#b7d3e8;text-decoration:none;">Careers</a>
+        <a href="/" style="color:#b7d3e8;text-decoration:none;">Contact</a>
+      </div>
+    </div>
+  </div>
+  <div style="max-width:1200px;margin:26px auto 0;padding-top:16px;border-top:1px solid #1d3f58;color:#8fb2cc;font-size:13px;">
+    &copy; 2026 VulnX. For authorized security testing only.
+  </div>
+</div>
+
+</body>
+</html>

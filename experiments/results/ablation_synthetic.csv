@@ -1,0 +1,4 @@
+dropped_factor,spearman_vs_full,kendall_vs_full
+asset_criticality,0.827,0.709
+network_exposure,0.893,0.807
+service_importance,0.964,0.891

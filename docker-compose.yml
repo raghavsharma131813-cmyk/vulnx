@@ -1,0 +1,23 @@
+# One command to build and run VulnX with its full scanning stack:
+#
+#     docker compose up --build
+#
+# Then open http://localhost:5000 in any browser.
+
+services:
+  vulnx:
+    build: .
+    container_name: vulnx
+    ports:
+      - "5000:5000"
+    # Force the runtime config so the web UI is reachable from the host
+    # (bind to all interfaces) and the scanner uses the container itself.
+    environment:
+      VULNX_SCANNER_HOST: "127.0.0.1"
+      VULNX_SCANNER_USER: "kali"
+      VULNX_BIND: "0.0.0.0"
+      VULNX_PORT: "5000"
+      VULNX_DEBUG: "0"
+    # nmap here uses TCP connect scans, which need no extra privileges.
+    # If you later enable raw/SYN scans, add:  cap_add: [NET_RAW, NET_ADMIN]
+    restart: unless-stopped

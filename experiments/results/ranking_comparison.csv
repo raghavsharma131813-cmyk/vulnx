@@ -1,0 +1,9 @@
+id,title,cvss_only,base_vulnx,context_aware,rank_cvss,rank_context
+F1,vsftpd 2.3.4 backdoor,9.8,4.74,3.61,1,4
+F2,OpenSSL vuln on payment API,7.5,3.75,5.53,4,1
+F3,Apache info disclosure (lab box),5.3,1.65,1.26,8,7
+F4,MySQL weak config on internal DB,8.1,1.57,1.81,3,6
+F5,Outdated nginx on marketing site,6.1,2.22,2.41,6,5
+F6,SMB signing disabled (critical file server),7.0,3.6,4.68,5,2
+F7,TLS misconfig on public portal,5.9,0.87,1.16,7,8
+F8,PostgreSQL CVE on isolated test host,9.1,4.51,3.67,2,3

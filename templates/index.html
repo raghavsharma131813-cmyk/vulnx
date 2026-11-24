@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VulnX | Security Assessment</title>
+    <style>
+        :root{
+            --p:#0284c7; --p2:#0369a1; --soft:#e0f2fe; --tint:#f0f9ff;
+            --accent:#38bdf8; --ink:#0c2a3f; --text:#1f2937; --muted:#64748b;
+            --line:#dde7ee; --bg:#f2f8fc; --white:#ffffff;
+        }
+        *{box-sizing:border-box;}
+        body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--text);}
+        a{text-decoration:none;}
+
+        /* nav */
+        .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;}
+        .nav .left{display:flex;align-items:center;gap:34px;}
+        .logo{display:flex;align-items:center;gap:11px;font-weight:800;font-size:21px;color:var(--ink);}
+        .logo .x{color:var(--p);}
+        .menu{display:flex;gap:24px;}
+        .menu a{color:#334155;font-weight:600;font-size:15px;}
+        .menu a:hover{color:var(--p2);}
+        .nav .right{display:flex;align-items:center;gap:12px;}
+        .btn-ghost{color:var(--p2);font-weight:700;padding:10px 16px;border-radius:10px;border:1px solid var(--soft);background:var(--tint);}
+        .btn-ghost:hover{background:var(--soft);}
+        .btn-solid{color:#fff;font-weight:700;padding:11px 20px;border-radius:10px;background:linear-gradient(135deg,var(--p),var(--p2));box-shadow:0 8px 18px rgba(2,132,199,.28);}
+
+        /* hero */
+        .hero{padding:56px 40px 28px;text-align:center;background:radial-gradient(900px 380px at 50% -40%,var(--soft),transparent);}
+        .hero .tag{display:inline-block;font-size:13px;font-weight:700;color:var(--p2);background:var(--soft);padding:6px 14px;border-radius:999px;margin-bottom:18px;}
+        .hero h1{font-size:42px;margin:0 0 14px;color:var(--ink);line-height:1.12;}
+        .hero h1 span{background:linear-gradient(135deg,var(--p),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent;}
+        .hero p{color:var(--muted);font-size:17px;max-width:640px;margin:0 auto 24px;line-height:1.6;}
+        .hero .cta{display:flex;gap:14px;justify-content:center;}
+
+        /* main */
+        .wrap{max-width:1140px;margin:30px auto;padding:0 32px;display:grid;grid-template-columns:1.5fr 1fr;gap:22px;align-items:start;}
+        .card{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:28px;box-shadow:0 6px 22px rgba(8,47,73,.06);}
+        h2{margin:0 0 4px;color:var(--ink);}
+        .sub{color:var(--muted);font-size:14px;margin-bottom:12px;}
+        label{display:block;margin-top:15px;margin-bottom:7px;font-weight:600;font-size:14px;color:var(--ink);}
+        input,select{width:100%;padding:12px 13px;border-radius:10px;border:1px solid var(--line);background:#fbfdff;font-size:14px;color:var(--text);}
+        input:focus,select:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px var(--soft);}
+        select{cursor:pointer;}
+        .ctxbox{margin-top:20px;padding:18px;border:1px solid var(--soft);border-radius:12px;background:var(--tint);}
+        .scanbtn{margin-top:22px;width:100%;padding:14px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 8px 18px rgba(2,132,199,.28);}
+        .scanbtn:hover{box-shadow:0 10px 24px rgba(2,132,199,.38);}
+        .error{margin-top:18px;padding:12px 14px;border-radius:10px;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;}
+        .note{margin-top:18px;font-size:13px;color:var(--muted);line-height:1.55;}
+
+        .feature{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--line);}
+        .feature:first-of-type{border-top:none;}
+        .feature .ico{flex:none;width:38px;height:38px;border-radius:10px;background:var(--soft);color:var(--p2);display:inline-flex;align-items:center;justify-content:center;font-size:18px;}
+        .feature h3{margin:2px 0 3px;font-size:14px;color:var(--ink);}
+        .feature p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.5;}
+        .pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+        .pill{font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;background:var(--tint);color:var(--p2);border:1px solid var(--soft);}
+
+        /* why strip */
+        .why{max-width:1140px;margin:10px auto 40px;padding:0 32px;}
+        .why h2{text-align:center;font-size:26px;margin-bottom:6px;}
+        .why .sub{text-align:center;margin-bottom:22px;}
+        .why-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+        .why-card{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center;}
+        .why-card .big{width:46px;height:46px;border-radius:12px;margin:0 auto 12px;background:var(--tint);color:var(--p2);display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid var(--soft);}
+        .why-card h3{margin:0 0 6px;font-size:16px;color:var(--ink);}
+        .why-card p{margin:0;font-size:13px;color:var(--muted);line-height:1.5;}
+
+        /* footer */
+        .footer{background:var(--ink);color:#cfe3f2;padding:46px 40px 22px;}
+        .footer-top{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1.4fr;gap:30px;}
+        .footer .logo{color:#fff;margin-bottom:12px;}
+        .footer p.tiny{color:#9fc0da;font-size:13px;line-height:1.6;max-width:260px;}
+        .footer h4{color:#fff;font-size:14px;margin:0 0 14px;}
+        .footer ul{list-style:none;padding:0;margin:0;}
+        .footer ul li{margin-bottom:10px;}
+        .footer ul li a{color:#b7d3e8;font-size:14px;}
+        .footer ul li a:hover{color:#fff;}
+        .news input{background:#113049;border:1px solid #1f4866;color:#eaf6ff;margin-bottom:10px;}
+        .news button{width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--p),var(--accent));color:#fff;font-weight:700;cursor:pointer;}
+        .footer-bottom{max-width:1140px;margin:30px auto 0;padding-top:18px;border-top:1px solid #1d3f58;display:flex;justify-content:space-between;align-items:center;color:#8fb2cc;font-size:13px;}
+        .social{display:flex;gap:12px;}
+        .social span{width:34px;height:34px;border-radius:9px;background:#113049;display:flex;align-items:center;justify-content:center;color:#b7d3e8;}
+
+        @media (max-width:860px){.wrap{grid-template-columns:1fr;}.why-grid{grid-template-columns:1fr 1fr;}.footer-top{grid-template-columns:1fr 1fr;}}
+    </style>
+</head>
+<body>
+
+<!-- svg logo reused -->
+<div class="nav">
+    <div class="left">
+        <div class="logo">
+            <svg width="38" height="38" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="11" fill="url(#g)"/>
+                <path d="M20 8 L30 12 V20 C30 26 25.5 29.6 20 31.6 C14.5 29.6 10 26 10 20 V12 Z" fill="#fff" fill-opacity="0.14" stroke="#fff" stroke-width="1.5"/>
+                <path d="M14.5 17.5 L20 27 L25.5 17.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <circle cx="20" cy="14" r="1.9" fill="#fff"/>
+                <defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#0369a1"/></linearGradient></defs>
+            </svg>
+            Vuln<span class="x">X</span>
+        </div>
+        <div class="menu"><a href="/">Scan</a><a href="/history">History</a><a href="/compare">Compare</a><a href="#why">Features</a></div>
+    </div>
+    <div class="right">
+        <a class="btn-ghost" href="/compare">Compare Scans</a>
+        <a class="btn-solid" href="#scan">Start a Scan</a>
+    </div>
+</div>
+
+<div class="hero">
+    <span class="tag">Context-aware vulnerability prioritization</span>
+    <h1>Find what matters, <span>not just what scans</span></h1>
+    <p>VulnX runs the full assessment workflow, Nmap discovery, NVD CVE intelligence, Metasploit module candidates, and ranks findings by the real risk to your assets.</p>
+    <div class="cta">
+        <a class="btn-solid" href="#scan">Start a Scan</a>
+        <a class="btn-ghost" href="#why">Learn more</a>
+    </div>
+</div>
+
+<div class="wrap" id="scan">
+    <div class="card">
+        <h2>Run a Security Assessment</h2>
+        <div class="sub">Specify the authorized IPv4 target that VulnX will assess.</div>
+        <form action="/scan" method="POST">
+            <label for="target">Authorized Target IPv4 Address</label>
+            <input type="text" id="target" name="target" placeholder="127.0.0.1"
+                   value="{{ request.form.get('target', '') }}" required>
+
+            <label for="password">Kali SSH Password</label>
+            <input type="password" id="password" name="password" required>
+
+            <div class="ctxbox">
+                <h2 style="font-size:16px;">Environmental Risk Context</h2>
+                <div class="sub">Hosts listed in asset_context.json override these per host.</div>
+
+                <label for="asset_criticality">Asset Criticality</label>
+                <select id="asset_criticality" name="asset_criticality">
+                    <option value="LOW" {% if (context and context.get('asset_criticality') == 'LOW') or (not context and request.form.get('asset_criticality', 'MEDIUM') == 'LOW') %}selected{% endif %}>LOW</option>
+                    <option value="MEDIUM" {% if (context and context.get('asset_criticality') == 'MEDIUM') or (not context and request.form.get('asset_criticality', 'MEDIUM') == 'MEDIUM') %}selected{% endif %}>MEDIUM</option>
+                    <option value="HIGH" {% if (context and context.get('asset_criticality') == 'HIGH') or (not context and request.form.get('asset_criticality', 'MEDIUM') == 'HIGH') %}selected{% endif %}>HIGH</option>
+                    <option value="CRITICAL" {% if (context and context.get('asset_criticality') == 'CRITICAL') or (not context and request.form.get('asset_criticality', 'MEDIUM') == 'CRITICAL') %}selected{% endif %}>CRITICAL</option>
+                </select>
+
+                <label for="network_exposure">Network Exposure</label>
+                <select id="network_exposure" name="network_exposure">
+                    <option value="LOCAL" {% if (context and context.get('network_exposure') == 'LOCAL') or (not context and request.form.get('network_exposure', 'INTERNAL') == 'LOCAL') %}selected{% endif %}>LOCAL</option>
+                    <option value="INTERNAL" {% if (context and context.get('network_exposure') == 'INTERNAL') or (not context and request.form.get('network_exposure', 'INTERNAL') == 'INTERNAL') %}selected{% endif %}>INTERNAL</option>
+                    <option value="DMZ" {% if (context and context.get('network_exposure') == 'DMZ') or (not context and request.form.get('network_exposure', 'INTERNAL') == 'DMZ') %}selected{% endif %}>DMZ</option>
+                    <option value="INTERNET" {% if (context and context.get('network_exposure') == 'INTERNET') or (not context and request.form.get('network_exposure', 'INTERNAL') == 'INTERNET') %}selected{% endif %}>INTERNET</option>
+                </select>
+
+                <label for="service_importance">Service Importance</label>
+                <select id="service_importance" name="service_importance">
+                    <option value="LOW" {% if (context and context.get('service_importance') == 'LOW') or (not context and request.form.get('service_importance', 'NORMAL') == 'LOW') %}selected{% endif %}>LOW</option>
+                    <option value="NORMAL" {% if (context and context.get('service_importance') == 'NORMAL') or (not context and request.form.get('service_importance', 'NORMAL') == 'NORMAL') %}selected{% endif %}>NORMAL</option>
+                    <option value="HIGH" {% if (context and context.get('service_importance') == 'HIGH') or (not context and request.form.get('service_importance', 'NORMAL') == 'HIGH') %}selected{% endif %}>HIGH</option>
+                    <option value="CRITICAL" {% if (context and context.get('service_importance') == 'CRITICAL') or (not context and request.form.get('service_importance', 'NORMAL') == 'CRITICAL') %}selected{% endif %}>CRITICAL</option>
+                </select>
+            </div>
+
+            <button class="scanbtn" type="submit">Start Context-Aware Scan</button>
+        </form>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <div class="note">Use VulnX only against systems you own or are explicitly authorized to assess. Context values are environmental inputs used for VulnX prioritization and do not replace the underlying CVSS score.</div>
+    </div>
+
+    <div class="card">
+        <h2>What VulnX does</h2>
+        <div class="sub">One platform for the full assessment workflow.</div>
+        <div class="feature"><span class="ico">&#9673;</span><div><h3>Network scanning</h3><p>Remote Nmap over SSH to Kali, with service and version detection.</p></div></div>
+        <div class="feature"><span class="ico">&#9873;</span><div><h3>CVE intelligence</h3><p>Live NVD correlation with CPE version applicability and validation states.</p></div></div>
+        <div class="feature"><span class="ico">&#9650;</span><div><h3>Context-aware risk</h3><p>Asset criticality, exposure and service importance reprioritize findings per host.</p></div></div>
+        <div class="feature"><span class="ico">&#9881;</span><div><h3>Metasploit intelligence</h3><p>Module discovery for candidate identification. No automatic exploitation.</p></div></div>
+        <div class="feature"><span class="ico">&#9636;</span><div><h3>Web &amp; reporting</h3><p>Passive web checks, attack-surface map, charts, and PDF export.</p></div></div>
+        <div class="pill-row"><span class="pill">Nmap</span><span class="pill">NVD</span><span class="pill">CVSS</span><span class="pill">Metasploit</span><span class="pill">SQLite</span></div>
+    </div>
+</div>
+
+<div class="why" id="why">
+    <h2>Why VulnX</h2>
+    <div class="sub">Built to answer one question: what should I fix first?</div>
+    <div class="why-grid">
+        <div class="why-card"><div class="big">&#9889;</div><h3>Faster triage</h3><p>Context ranking surfaces the findings that actually threaten critical assets.</p></div>
+        <div class="why-card"><div class="big">&#9878;</div><h3>Evidence-aware</h3><p>Separates observed services from validated, version-matched vulnerabilities.</p></div>
+        <div class="why-card"><div class="big">&#128202;</div><h3>Clear reporting</h3><p>Charts, attack-surface map and scan-to-scan comparison in one dashboard.</p></div>
+        <div class="why-card"><div class="big">&#128274;</div><h3>Safe by design</h3><p>Intelligence only. VulnX never auto-runs exploit modules.</p></div>
+    </div>
+</div>
+
+<div class="footer">
+    <div class="footer-top">
+        <div>
+            <div class="logo">
+                <svg width="34" height="34" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="11" fill="url(#g2)"/><path d="M20 8 L30 12 V20 C30 26 25.5 29.6 20 31.6 C14.5 29.6 10 26 10 20 V12 Z" fill="#fff" fill-opacity="0.14" stroke="#fff" stroke-width="1.5"/><path d="M14.5 17.5 L20 27 L25.5 17.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="20" cy="14" r="1.9" fill="#fff"/><defs><linearGradient id="g2" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#0369a1"/></linearGradient></defs></svg>
+                Vuln<span style="color:var(--accent);">X</span>
+            </div>
+            <p class="tiny">Integrated network and web vulnerability assessment with context-aware risk prioritization.</p>
+        </div>
+        <div><h4>Product</h4><ul><li><a href="/">Run a Scan</a></li><li><a href="/history">Scan History</a></li><li><a href="/history">Comparison</a></li></ul></div>
+        <div><h4>Company</h4><ul><li><a href="#why">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul></div>
+        <div class="news"><h4>Stay updated</h4><input placeholder="Enter your email"><button type="button">Join the List</button><p class="tiny" style="margin-top:12px;">Occasional updates on new VulnX features. No spam.</p></div>
+    </div>
+    <div class="footer-bottom">
+        <div>&copy; 2026 VulnX. For authorized security testing only.</div>
+        <div class="social"><span>in</span><span>&#120143;</span><span>&#9993;</span></div>
+    </div>
+</div>
+
+</body>
+</html>

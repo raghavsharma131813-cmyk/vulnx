@@ -1,0 +1,4 @@
+flask
+paramiko
+fpdf2
+requests

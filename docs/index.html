@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VulnX — Context-Aware Vulnerability Assessment</title>
+<style>
+:root{--p:#0284c7;--p2:#0369a1;--soft:#e0f2fe;--tint:#f0f9ff;--accent:#38bdf8;
+--ink:#0c2a3f;--text:#1f2937;--muted:#64748b;--line:#dde7ee;--bg:#f2f8fc;--white:#fff;--code:#0b2130;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Segoe UI",system-ui,Arial,sans-serif;background:var(--bg);color:var(--text);}
+a{color:var(--p2);text-decoration:none;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;}
+.logo{display:flex;align-items:center;gap:11px;font-weight:800;font-size:21px;color:var(--ink);}
+.logo .x{color:var(--p);}
+.nav .menu{display:flex;gap:22px;font-weight:600;font-size:15px;}
+.nav .menu a{color:#334155;}
+.btn{display:inline-block;color:#fff;font-weight:700;padding:11px 20px;border-radius:10px;background:linear-gradient(135deg,var(--p),var(--p2));box-shadow:0 8px 18px rgba(2,132,199,.28);}
+.ghost{color:var(--p2);background:var(--tint);border:1px solid var(--soft);box-shadow:none;}
+.hero{padding:62px 40px 30px;text-align:center;background:radial-gradient(900px 400px at 50% -40%,var(--soft),transparent);}
+.hero .tag{display:inline-block;font-size:13px;font-weight:700;color:var(--p2);background:var(--soft);padding:6px 14px;border-radius:999px;margin-bottom:18px;}
+.hero h1{font-size:44px;margin:0 0 14px;color:var(--ink);line-height:1.12;}
+.hero h1 span{background:linear-gradient(135deg,var(--p),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.hero p{color:var(--muted);font-size:18px;max-width:660px;margin:0 auto 24px;line-height:1.6;}
+.cta{display:flex;gap:14px;justify-content:center;}
+.wrap{max-width:1040px;margin:40px auto;padding:0 28px;}
+.section{margin-bottom:46px;}
+.section h2{font-size:28px;color:var(--ink);margin:0 0 6px;}
+.section .lead{color:var(--muted);margin-bottom:20px;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+.card{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:0 6px 22px rgba(8,47,73,.06);}
+.card .ico{width:44px;height:44px;border-radius:11px;background:var(--tint);color:var(--p2);display:flex;align-items:center;justify-content:center;font-size:21px;border:1px solid var(--soft);margin-bottom:12px;}
+.card h3{margin:0 0 6px;font-size:17px;color:var(--ink);}
+.card p{margin:0;font-size:14px;color:var(--muted);line-height:1.55;}
+.flow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.step-chip{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-weight:600;color:var(--ink);font-size:14px;}
+.arrow{color:var(--p);font-weight:800;}
+ol.steps{counter-reset:s;list-style:none;padding:0;margin:0;}
+ol.steps>li{position:relative;background:var(--white);border:1px solid var(--line);border-radius:14px;padding:18px 20px 18px 62px;margin-bottom:14px;box-shadow:0 6px 22px rgba(8,47,73,.05);}
+ol.steps>li::before{counter-increment:s;content:counter(s);position:absolute;left:18px;top:18px;width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;}
+ol.steps h3{margin:0 0 6px;font-size:16px;color:var(--ink);}
+ol.steps p{margin:0;font-size:14px;color:var(--muted);line-height:1.55;}
+pre{background:var(--code);color:#d5f2ff;border-radius:10px;padding:14px 16px;overflow:auto;font-size:13.5px;margin:10px 0 0;}
+.links a{display:inline-block;margin:6px 10px 0 0;}
+.warn{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.6;}
+.footer{background:var(--ink);color:#cfe3f2;padding:40px;text-align:center;font-size:14px;}
+.footer .logo{justify-content:center;color:#fff;margin-bottom:10px;}
+@media(max-width:820px){.grid{grid-template-columns:1fr;}.hero h1{font-size:34px;}}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="logo">
+    <svg width="38" height="38" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="11" fill="url(#g)"/><path d="M20 8 L30 12 V20 C30 26 25.5 29.6 20 31.6 C14.5 29.6 10 26 10 20 V12 Z" fill="#fff" fill-opacity="0.14" stroke="#fff" stroke-width="1.5"/><path d="M14.5 17.5 L20 27 L25.5 17.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="20" cy="14" r="1.9" fill="#fff"/><defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#0369a1"/></linearGradient></defs></svg>
+    Vuln<span class="x">X</span>
+  </div>
+  <div class="menu"><a href="#what">What</a><a href="#how">How it works</a><a href="#start">Get started</a><a href="https://github.com/raghavsharma131813-cmyk/vulnx">GitHub</a></div>
+  <a class="btn" href="https://github.com/raghavsharma131813-cmyk/vulnx/archive/refs/heads/main.zip">Download</a>
+</div>
+
+<div class="hero">
+  <span class="tag">Context-aware vulnerability prioritization</span>
+  <h1>Find what matters, <span>not just what scans</span></h1>
+  <p>VulnX is a web-based security assessment platform. It discovers services, correlates CVEs, surfaces Metasploit candidates, and ranks every finding by the real risk to your assets, not by CVSS alone.</p>
+  <div class="cta"><a class="btn" href="https://github.com/raghavsharma131813-cmyk/vulnx/archive/refs/heads/main.zip"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:7px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download VulnX</a><a class="btn ghost" href="https://github.com/raghavsharma131813-cmyk/vulnx">View on GitHub</a></div>
+  <p style="font-size:13.5px;margin-top:14px;color:var(--muted);">Free and open source. Runs on Windows, macOS, or Linux.</p>
+</div>
+
+<div class="wrap">
+
+  <div class="section" id="what">
+    <h2>What is VulnX</h2>
+    <div class="lead">One platform for the full vulnerability assessment workflow.</div>
+    <div class="grid">
+      <div class="card"><div class="ico">&#9673;</div><h3>Network scanning</h3><p>Nmap discovery with service and version detection, parsed into structured findings.</p></div>
+      <div class="card"><div class="ico">&#9873;</div><h3>CVE intelligence</h3><p>Live NVD correlation with CPE version applicability, so a match is evidence, not a guess.</p></div>
+      <div class="card"><div class="ico">&#9650;</div><h3>Context-aware risk</h3><p>Asset criticality, network exposure and service importance reprioritize findings per host.</p></div>
+      <div class="card"><div class="ico">&#9881;</div><h3>Metasploit intelligence</h3><p>Module discovery for candidate identification. VulnX never auto-runs exploits.</p></div>
+      <div class="card"><div class="ico">&#9636;</div><h3>Web &amp; reporting</h3><p>Passive web checks, an attack-surface map, charts, scan history, and PDF export.</p></div>
+      <div class="card"><div class="ico">&#128202;</div><h3>Why it is different</h3><p>The same CVE ranks higher on a critical internet-facing asset than on a throwaway lab box.</p></div>
+    </div>
+  </div>
+
+  <div class="section" id="how">
+    <h2>How it works</h2>
+    <div class="lead">A single assessment pipeline, from target to prioritized report.</div>
+    <div class="flow">
+      <span class="step-chip">Target</span><span class="arrow">&rarr;</span>
+      <span class="step-chip">Nmap scan</span><span class="arrow">&rarr;</span>
+      <span class="step-chip">Parse services &amp; CPEs</span><span class="arrow">&rarr;</span>
+      <span class="step-chip">NVD CVE correlation</span><span class="arrow">&rarr;</span>
+      <span class="step-chip">Context-aware risk engine</span><span class="arrow">&rarr;</span>
+      <span class="step-chip">Metasploit intelligence</span><span class="arrow">&rarr;</span>
+      <span class="step-chip">Report &amp; history</span>
+    </div>
+  </div>
+
+  <div class="section" id="start">
+    <h2>Get started</h2>
+    <div class="lead">Runs on Windows, macOS, or Linux through Docker. No Kali setup required.</div>
+    <ol class="steps">
+      <li>
+        <h3>Install Docker</h3>
+        <p>Download and install Docker, then make sure it is running.</p>
+        <div class="links">
+          <a href="https://www.docker.com/products/docker-desktop/">Docker Desktop (Windows / macOS)</a>
+          <a href="https://docs.docker.com/engine/install/">Docker Engine (Linux)</a>
+        </div>
+      </li>
+      <li>
+        <h3>Get the VulnX project</h3>
+        <p>Download the project as a ZIP and unzip it, or clone it with git. Either way you get a folder containing the Dockerfile and docker-compose.yml.</p>
+        <div class="links" style="margin:10px 0 2px;">
+          <a class="btn" style="padding:9px 16px;" href="https://github.com/raghavsharma131813-cmyk/vulnx/archive/refs/heads/main.zip">Download ZIP</a>
+        </div>
+        <pre>git clone https://github.com/raghavsharma131813-cmyk/vulnx.git
+cd vulnx</pre>
+      </li>
+      <li>
+        <h3>Build and run</h3>
+        <p>From inside the VulnX folder, run one command. The first build installs Metasploit and can take 10 to 20 minutes.</p>
+        <pre>docker compose up --build</pre>
+      </li>
+      <li>
+        <h3>Open and scan</h3>
+        <p>Open the app in your browser. For a safe first test, scan <code>127.0.0.1</code> with the Kali SSH Password <code>kali</code>.</p>
+        <pre>http://localhost:5000</pre>
+      </li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <div class="warn">
+      <strong>Authorized use only.</strong> Only scan systems you own or have explicit written
+      permission to test. Scanning systems without authorization is illegal in most countries.
+      VulnX performs intelligence and discovery only and never automatically runs exploit modules.
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="logo">
+    <svg width="30" height="30" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="11" fill="url(#gf)"/><path d="M20 8 L30 12 V20 C30 26 25.5 29.6 20 31.6 C14.5 29.6 10 26 10 20 V12 Z" fill="#fff" fill-opacity="0.14" stroke="#fff" stroke-width="1.5"/><path d="M14.5 17.5 L20 27 L25.5 17.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="20" cy="14" r="1.9" fill="#fff"/><defs><linearGradient id="gf" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#0369a1"/></linearGradient></defs></svg>
+    Vuln<span style="color:var(--accent);">X</span>
+  </div>
+  <div style="margin-bottom:10px;"><a href="https://github.com/raghavsharma131813-cmyk/vulnx" style="color:#9fd4f5;">github.com/raghavsharma131813-cmyk/vulnx</a></div>
+  &copy; 2026 VulnX. For authorized security testing only.
+</div>
+
+</body>
+</html>
