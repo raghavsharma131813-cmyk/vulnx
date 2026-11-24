@@ -21,3 +21,8 @@ Thumbs.db
 
 # Pytest cache
 .pytest_cache/
+
+# Development reports and generated scan outputs
+report/*.docx
+report/VulnX_Report_scan*.pdf
+report/latest_scan.json
